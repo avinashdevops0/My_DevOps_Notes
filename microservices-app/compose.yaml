@@ -67,3 +67,98 @@ networks:
 
 volumes:
   my-vol:
+
+
+------------------------
+
+version: "3.8"
+
+services:
+  mysql:
+    image: microservices-app/mysql:latest
+    networks:
+      - my-net
+    volumes:
+      - my-vol:/var/lib/mysql
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  users-service:
+    image: microservices-app/users-service:latest
+    networks:
+      - my-net
+    depends_on:
+      - mysql
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  products-service:
+    image: microservices-app/products-service:latest
+    networks:
+      - my-net
+    depends_on:
+      - mysql
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  orders-service:
+    image: microservices-app/orders-service:latest
+    networks:
+      - my-net
+    depends_on:
+      - mysql
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  api-gateway:
+    image: microservices-app/api-gateway:latest
+    networks:
+      - my-net
+    depends_on:
+      - users-service
+      - products-service
+      - orders-service
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  frontend:
+    image: microservices-app/frontend:latest
+    networks:
+      - my-net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  nginx:
+    image: microservices-app/nginx:latest
+    ports:
+      - "80:80"
+    networks:
+      - my-net
+    depends_on:
+      - frontend
+      - api-gateway
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+networks:
+  my-net:
+    driver: overlay
+
+volumes:
+  my-vol:
+    driver: local
+

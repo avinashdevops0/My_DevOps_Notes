@@ -10,6 +10,7 @@ COPY . .
 # Runtime stage
 FROM node:alpine
 WORKDIR /app
+RUN apk add --no-cache curl
 
 COPY --from=build /app .
 
