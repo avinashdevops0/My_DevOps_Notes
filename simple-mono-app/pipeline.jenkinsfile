@@ -8,7 +8,7 @@ pipeline {
         }
         stage("Code") {
             steps {
-              git branch: 'docker', url: 'https://github.com/avinashdevops0/My_DevOps_Notes.git'
+              git branch: 'terraform', url: 'https://github.com/avinashdevops0/My_DevOps_Notes.git'
 
             }
         }
