@@ -1,0 +1,36 @@
+pipeline {
+    agent any 
+    stages{
+        stage ("Clean ws") {
+            steps{
+                cleanWs()
+            }
+        }
+        stage("Code") {
+            steps {
+              git branch: 'terraform', url: 'https://github.com/avinashdevops0/My_DevOps_Notes.git'
+
+            }
+        }
+        stage("Build") {
+            steps {
+                dir("simple-mono-app") {
+                sh "docker-compose build" 
+            }
+            }
+        }
+        stage ("Deploy") {
+            steps {
+                dir("simple-mono-app") {
+                sh "docker-compose up -d"
+            }
+            }
+        }
+        stage ("ps") {
+            steps {
+                sh "docker ps -a "
+            }
+        }
+
+    }
+}
