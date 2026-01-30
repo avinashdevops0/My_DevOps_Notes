@@ -15,7 +15,7 @@ pipeline {
         stage("Build") {
             steps {
                 dir("simple-mono-app") {
-                sh "docker-compose buil"
+                sh "docker-compose build"
             }
             }
         }
