@@ -1,0 +1,151 @@
+🗒 Docker Secrets Notes
+1️⃣ What are Docker Secrets?
+
+Sensitive data (passwords, API keys, tokens, DB creds)
+
+Read-only inside containers
+
+Mounted at runtime (not baked into images)
+
+Better than env vars for production because they aren’t exposed in docker inspect
+
+Key points:
+
+Each secret = 1 file
+
+Default mount path inside container: /run/secrets/<secret_name>
+
+Only containers that declare the secret can see it
+
+Works in Docker Compose v3+ and Docker Swarm
+
+2️⃣ Create secrets (files)
+echo "root" > db_user.txt
+echo "rootpassword" > db_password.txt
+echo "simple_app_db" > db_name.txt
+
+
+Do not commit these files to git
+
+Add them to .gitignore:
+
+*.txt
+
+3️⃣ Define secrets in docker-compose.yml
+version: "3.8"
+
+services:
+  be:
+    build: ./backend
+    secrets:
+      - db_user
+      - db_password
+      - db_name
+    environment:
+      DB_USER_FILE: /run/secrets/db_user
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      DB_NAME_FILE: /run/secrets/db_name
+
+secrets:
+  db_user:
+    file: ./db_user.txt
+  db_password:
+    file: ./db_password.txt
+  db_name:
+    file: ./db_name.txt
+
+
+Explanation:
+
+secrets: at the bottom defines the source file on the host
+
+services > be > secrets: attaches them to the container
+
+Use *_FILE env vars in the container to tell your app where to read the secret
+
+4️⃣ Access secrets inside your app
+Node.js example:
+import fs from "fs";
+
+const dbUser = fs.readFileSync(process.env.DB_USER_FILE, "utf8").trim();
+const dbPassword = fs.readFileSync(process.env.DB_PASSWORD_FILE, "utf8").trim();
+const dbName = fs.readFileSync(process.env.DB_NAME_FILE, "utf8").trim();
+
+console.log(dbUser, dbPassword, dbName);
+
+
+✅ Safe, read-only access
+✅ No sensitive data in process.env directly
+
+5️⃣ Important rules & best practices
+
+One secret = one file
+
+You cannot automatically split multiple secrets in a single file
+
+Exception: parse manually (dev only)
+
+Do not hardcode secrets in Dockerfile
+
+Do not commit secret files
+
+Secrets are read-only
+
+Only available at runtime
+
+Works like a volume mount, but for sensitive data
+
+For local dev, .env files are OK, but use secrets for production
+
+6️⃣ Visual analogy
+Host:
+  ./db_user.txt
+  ./db_password.txt
+  ./db_name.txt
+
+Docker container (runtime):
+  /run/secrets/db_user         → "root"
+  /run/secrets/db_password     → "rootpassword"
+  /run/secrets/db_name         → "simple_app_db"
+
+
+Mounted read-only
+
+Only container “be” can see them
+
+7️⃣ Optional: Using secrets with MySQL / Postgres images
+db:
+  image: mysql:8
+  secrets:
+    - db_password
+  environment:
+    MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+
+
+Official images support *_FILE env vars
+
+Docker will read the secret file for DB password automatically
+
+8️⃣ Quick checklist
+
+ Secret file exists on host
+
+ Defined in docker-compose.yml
+
+ Attached to container in services:
+
+ App reads /run/secrets/<secret_name>
+
+ File ignored in git
+
+
+
+
+
+
+
+
+
+
+
+ 
