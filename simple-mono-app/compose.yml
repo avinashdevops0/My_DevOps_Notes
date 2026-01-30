@@ -2,10 +2,7 @@ version: "3.8"
 
 services:
   db:
-    image: mysql:8.4
-    # environment:
-    #   MYSQL_ROOT_PASSWORD: rootpassword
-    #   MYSQL_DATABASE: simple_app_db
+    build: ./database
     volumes:
       - db-vol:/var/lib/mysql
     networks:
